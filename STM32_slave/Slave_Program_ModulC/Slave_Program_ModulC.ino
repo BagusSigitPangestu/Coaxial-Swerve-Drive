@@ -14,21 +14,17 @@
 #define pinLed PC13
 
 // Konstanta PID Steer
-const double Kp_steer = 1.15; // default 0.8
-const double Kd_steer = 0.5; // 0.6
-const double Ki_Steer = 0.002;
-// modul D(kp = 0.97, Kd = 0.6), modul B(Kp = 1.1, Kd = 0.7)
+const double Kp_steer = 1.147;  // 1.147
+const double Kd_steer = 0.48;   // 0.48
 
 // Konstanta PID Drive
-const double Kp_drive = 0.05; //0.183
-const double Ki_drive = 0.2; // 0.49
-const double Kd_drive = 0.005; //0.005
-//modul B(Kp = 0.08, Ki = 0.5, Kd = 0.005)
+const double Kp_drive = 0.051;   //0.051
+const double Ki_drive = 0;    // 0.43
+const double Kd_drive = 0;  //0.0111
 
 // Variabel Steer
 volatile long encoderCount1 = 0;
 double lastError_steer = 0;
-double eIntegral_steer = 0;
 
 // Variabel Drive
 short int setpointRPM = 0;
@@ -44,13 +40,13 @@ const double GEAR_RATIO_drive = 0.4725;
 const double SAMPLING_TIME = 100;  // in milliseconds
 
 short int speed;
-short int degree = 45;
+short int degree;
 
 unsigned long prevTime;
 
 TwoWire Wire2(PB11, PB10);
 
-#define SLAVE_ADDR 13
+#define SLAVE_ADDR 12
 #define DATA_SIZE 20
 
 char receivedData[DATA_SIZE + 1];  // Buffer untuk menyimpan data yang diterima, ditambah 1 untuk null terminator
@@ -61,8 +57,8 @@ unsigned long lastTimePID_drive = 0;
 unsigned long lastTimeI2C = 0;
 
 void setup() {
-  //  Wire2.begin(SLAVE_ADDR);        // Mulai sebagai perangkat slave dengan alamat 13
-  //  Wire2.onReceive(receiveEvent);  // Menentukan fungsi yang akan dipanggil saat data diterima
+   Wire2.begin(SLAVE_ADDR);        // Mulai sebagai perangkat slave dengan alamat 13
+   Wire2.onReceive(receiveEvent);  // Menentukan fungsi yang akan dipanggil saat data diterima
   Serial.begin(115200);
 
   pinMode(PC13, OUTPUT);
@@ -107,24 +103,21 @@ void loop() {
   // Pembacaan I2C
   if (currentTime - lastTimeI2C >= 100) {  // Interval 100ms
     // Data I2C sudah diterima di receiveEvent
-    TaskControlSerial();
+    // TaskControlSerial();
     lastTimeI2C = currentTime;
   }
 
-  //    Serial.println(encoderCount2);
-  //    delay(100);
-
-  //  // Pengendalian PID Steer
-    if (currentTime - lastTimePID_steer >= 50) {  // Interval 50ms
-      TaskControlAngle((double)degree);
-      lastTimePID_steer = currentTime;
-    }
+   // Pengendalian PID Steer
+  if (currentTime - lastTimePID_steer >= 50) {  // Interval 50ms
+    TaskControlAngle((double)degree);
+    lastTimePID_steer = currentTime;
+  }
 
   // Pengendalian PID Drive
-//  if (currentTime - lastTimePID_drive >= SAMPLING_TIME) {
-//    TaskControlSpeed(speed);
-//    lastTimePID_drive = currentTime;
-//  }
+  if (currentTime - lastTimePID_drive >= SAMPLING_TIME) {
+    TaskControlSpeed(speed);
+    lastTimePID_drive = currentTime;
+  }
 }
 
 void TaskControlSerial() {
@@ -133,8 +126,8 @@ void TaskControlSerial() {
     char d = Serial.read();
     // data += d;
     if (d == 's') {
-//      speed = Serial.parseInt();
-            degree = Serial.parseInt();
+      speed = Serial.parseInt();
+      // degree = Serial.parseInt();
     }
   }
 }
@@ -142,8 +135,9 @@ void TaskControlSerial() {
 void TaskControlAngle(float setPoint) {
   static double PWM_L = 0;
   static double PWM_R = 0;
+  // unsigned long currentTime = millis();
 
-  double degreePerPulse = (setPoint / 360.0) * (PPR_steer * GEAR_RATIO_steer);
+  int degreePerPulse = (setPoint / 360.0) * (PPR_steer * GEAR_RATIO_steer);
   double error = degreePerPulse - encoderCount1;
   //  eIntegral_steer += error;
   double eDerivative_steer = error - lastError_steer;
@@ -157,10 +151,12 @@ void TaskControlAngle(float setPoint) {
   analogWrite(pin1, PWM_L);
   analogWrite(pin2, PWM_R);
 
-  Serial.print("Setpoint: ");
-  Serial.print(degreePerPulse);
-  Serial.print(" encoderCount1: ");
-  Serial.println(encoderCount1);
+  // float deltaT = (float)(currentTime) / 1000.0;
+  // Serial.print(deltaT);
+  // Serial.print(" ");
+  // Serial.print(degreePerPulse);
+  // Serial.print(" ");
+  // Serial.println(encoderCount1);
 
   lastError_steer = error;
 }
@@ -183,28 +179,18 @@ void TaskControlSpeed(short int setpoint) {
 
     pidOutput_drive = constrain(pidOutput_drive, -255, 255);
 
-    //    if (setpoint != 0) {
-    //      PWM_L = (pidOutput_drive >= 0) ? abs(pidOutput_drive) : 0;
-    //      PWM_R = (pidOutput_drive >= 0) ? 0 : abs(pidOutput_drive);
-    //    } else {
-    //      PWM_L = 0;
-    //      PWM_R = 0;
-    //    }
     PWM_L = (pidOutput_drive >= 0) ? abs(pidOutput_drive) : 0;
     PWM_R = (pidOutput_drive >= 0) ? 0 : abs(pidOutput_drive);
 
     analogWrite(pin3, PWM_L);
     analogWrite(pin4, PWM_R);
 
-    //    float deltaT = ((float)(currentTime - prevTime)) / 1000.0;
-    //    prevTime = currentTime;
-    //    Serial.println(deltaT);
-    //    Serial.print("\t");
-
-    Serial.print("Setpoint RPM: ");
-    Serial.print(setpoint);
-    Serial.print("\tMotor RPM: ");
-    Serial.println(currentRPM);
+    // float deltaT = ((float)(currentTime - prevTime)) / 1000.0;
+    // Serial.print(deltaT);
+    // Serial.print(" ");
+    // Serial.print(setpoint);
+    // Serial.print(" ");
+    // Serial.println(currentRPM);
 
     lastRPM = currentRPM;
     lastTime = currentTime;
