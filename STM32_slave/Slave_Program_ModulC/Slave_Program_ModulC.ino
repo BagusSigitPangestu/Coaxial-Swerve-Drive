@@ -19,8 +19,8 @@ const double Kd_steer = 0.48;   // 0.48
 
 // Konstanta PID Drive
 const double Kp_drive = 0.051;   //0.051
-const double Ki_drive = 0;    // 0.43
-const double Kd_drive = 0;  //0.0111
+const double Ki_drive = 0.43;    // 0.43
+const double Kd_drive = 0.0111;  //0.0111
 
 // Variabel Steer
 volatile long encoderCount1 = 0;
