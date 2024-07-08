@@ -8,6 +8,7 @@ void readStick()
 
   lx = Ps3.data.analog.stick.lx;
   ly = Ps3.data.analog.stick.ly;
+  rx = Ps3.data.analog.stick.rx;
 }
 
 void addValue(int degreeVal[4], int speedVal[4])
@@ -17,6 +18,16 @@ void addValue(int degreeVal[4], int speedVal[4])
     Steer_SP[i] = degreeVal[i];
     Drive_SP[i] = speedVal[i];
   }
+}
+void onConnect()
+{
+  for(int i = 0; i < 3; i++){
+    digitalWrite(pinBuzzer, HIGH);
+    delay(100);
+    digitalWrite(pinBuzzer, LOW);
+    delay(100);
+  }
+  Serial.println("Connected.");
 }
 
 void setup()
@@ -29,9 +40,11 @@ void setup()
     delay(1000);
     ESP.restart();
   }
-  // Ps3.attach(readStick);
-  // Ps3.begin("8c:7c:b5:47:4b:f6");
-  // Serial.println("Ready.");
+  pinMode(pinBuzzer, OUTPUT);
+  Ps3.attach(readStick);
+  Ps3.attachOnConnect(onConnect);
+  Ps3.begin("00:1a:80:94:ad:ff");
+  Serial.println("Ready.");
 
   zeroDegree = EEPROM.read(addsDegree);
   for (int i = 0; i < 4; i++)
@@ -72,58 +85,58 @@ void mainApplicationTask(void *parameter)
 
   for (;;)
   {
-    while (Serial.available() > 0)
-    {
-      char d = Serial.read();
-      data += d;
-      if (d == '$')
-      {
-        parsing = true;
-      }
+    // while (Serial.available() > 0)
+    // {
+    //   char d = Serial.read();
+    //   data += d;
+    //   if (d == '$')
+    //   {
+    //     parsing = true;
+    //   }
 
-      if (parsing)
-      {
-        // Serial.print("data masuk= " + data);
-        int index = 0;
-        for (int i = 0; i < data.length(); i++)
-        {
-          if (data[i] == '#')
-          {
-            index++;
-            ArrData[index] = "";
-          }
-          else
-          {
-            ArrData[index] += data[i];
-          }
-        }
+    //   if (parsing)
+    //   {
+    //     // Serial.print("data masuk= " + data);
+    //     int index = 0;
+    //     for (int i = 0; i < data.length(); i++)
+    //     {
+    //       if (data[i] == '#')
+    //       {
+    //         index++;
+    //         ArrData[index] = "";
+    //       }
+    //       else
+    //       {
+    //         ArrData[index] += data[i];
+    //       }
+    //     }
 
-        for (int j = 0; j < 4; j++)
-        {
-          Drive_SP[j] = ArrData[1].toInt();
-          Steer_SP[j] = ArrData[2].toInt();
-        }
-        Serial.print(Drive_SP[0]);
-        Serial.print("\t");
-        Serial.print(Drive_SP[1]);
-        Serial.print("\t");
-        Serial.print(Drive_SP[2]);
-        Serial.print("\t");
-        Serial.println(Drive_SP[3]);
+    //     for (int j = 0; j < 4; j++)
+    //     {
+    //       Drive_SP[j] = ArrData[1].toInt();
+    //       Steer_SP[j] = ArrData[2].toInt();
+    //     }
+    //     Serial.print(Drive_SP[0]);
+    //     Serial.print("\t");
+    //     Serial.print(Drive_SP[1]);
+    //     Serial.print("\t");
+    //     Serial.print(Drive_SP[2]);
+    //     Serial.print("\t");
+    //     Serial.println(Drive_SP[3]);
 
-        Serial.print(Steer_SP[0]);
-        Serial.print("\t");
-        Serial.print(Steer_SP[1]);
-        Serial.print("\t");
-        Serial.print(Steer_SP[2]);
-        Serial.print("\t");
-        Serial.println(Steer_SP[3]);
-        Serial.println("");
+    //     Serial.print(Steer_SP[0]);
+    //     Serial.print("\t");
+    //     Serial.print(Steer_SP[1]);
+    //     Serial.print("\t");
+    //     Serial.print(Steer_SP[2]);
+    //     Serial.print("\t");
+    //     Serial.println(Steer_SP[3]);
+    //     Serial.println("");
 
-        data = "";
-        parsing = false;
-      }
-    }
+    //     data = "";
+    //     parsing = false;
+    //   }
+    // }
     // Menghitung sudut dalam radian
     // float angleRadians = atan2(joystick_LY, joystick_LX);
 
@@ -135,70 +148,82 @@ void mainApplicationTask(void *parameter)
     // Serial.print("\t");
     // Serial.println(joystick_LX);
 
-    // if (ly <= -30 && (lx >= -40 && lx <= 40) || Ps3.data.button.up)
-    // {
-    //   Serial.println("Speed 600 dan degree 0");
-    //   int degreeVal[4] = {0, 0, 0, 0};
-    //   int speedVal[4] = {500, 500, 500, 500};
-    //   addValue(degreeVal, speedVal);
-    // }
-    // else if (ly >= 30 && (lx >= -50 && lx <= 50) || Ps3.data.button.down)
-    // {
-    //   Serial.println("Speed 600 dan degree 180");
-    //   int degreeVal[4] = {180, 180, 180, 180};
-    //   int speedVal[4] = {500, 500, 500, 500};
-    //   addValue(degreeVal, speedVal);
-    // }
-    // else if (lx >= 30 && (ly >= -50 && ly <= 50) || Ps3.data.button.right)
-    // {
-    //   Serial.println("Speed 600 dan degree -90");
-    //   int degreeVal[4] = {-90, -90, -90, -90};
-    //   int speedVal[4] = {500, 500, 500, 500};
-    //   addValue(degreeVal, speedVal);
-    // }
-    // else if (ly <= -30 && (lx >= 31 && lx <= 127) || Ps3.data.button.right && Ps3.data.button.up)
-    // {
-    //   Serial.println("Speed 600 dan degree -45");
-    //   int degreeVal[4] = {-45, -45, -45, -45};
-    //   int speedVal[4] = {500, 500, 500, 500};
-    //   addValue(degreeVal, speedVal);
-    // }
-    // else if (ly >= 30 && (lx >= 31 && lx <= 127) || Ps3.data.button.right && Ps3.data.button.down)
-    // {
-    //   Serial.println("Speed 600 dan degree -135");
-    //   int degreeVal[4] = {-135, -135, -135, -135};
-    //   int speedVal[4] = {500, 500, 500, 500};
-    //   addValue(degreeVal, speedVal);
-    // }
-    // else if (lx <= -30 && (ly >= -50 && ly <= 50) || Ps3.data.button.left)
-    // {
-    //   Serial.println("Speed 600 dan degree 90");
-    //   int degreeVal[4] = {90, 90, 90, 90};
-    //   int speedVal[4] = {500, 500, 500, 500};
-    //   addValue(degreeVal, speedVal);
-    // }
-    // else if (ly <= -50 && (lx <= -36 && lx >= -128) || Ps3.data.button.left && Ps3.data.button.up)
-    // {
-    //   Serial.println("Speed 600 dan degree 45");
-    //   int degreeVal[4] = {45, 45, 45, 45};
-    //   int speedVal[4] = {500, 500, 500, 500};
-    //   addValue(degreeVal, speedVal);
-    // }
-    // else if (ly >= 35 && (lx <= -36 && lx >= -128) || Ps3.data.button.left && Ps3.data.button.down)
-    // {
-    //   Serial.println("Speed 600 dan degree 135");
-    //   int degreeVal[4] = {135, 135, 135, 135};
-    //   int speedVal[4] = {500, 500, 500, 500};
-    //   addValue(degreeVal, speedVal);
-    // }
-    // else
-    // {
-    //   Serial.println("Speed 0 dan degree 0");
-    //   for (int i = 0; i < 4; i++)
-    //   {
-    //     Drive_SP[i] = 0;
-    //   }
-    // }
+      if (ly <= -30 && (lx >= -40 && lx <= 40) || Ps3.data.button.up)
+      {
+        Serial.println("Speed 600 dan degree 0");
+        int degreeVal[4] = {0, 0, 0, 0};
+        int speedVal[4] = {500, 500, 500, 500};
+        addValue(degreeVal, speedVal);
+      }
+      else if (ly >= 30 && (lx >= -50 && lx <= 50) || Ps3.data.button.down)
+      {
+        Serial.println("Speed 600 dan degree 180");
+        int degreeVal[4] = {180, 180, 180, 180};
+        int speedVal[4] = {500, 500, 500, 500};
+        addValue(degreeVal, speedVal);
+      }
+      else if (lx >= 30 && (ly >= -50 && ly <= 50) || Ps3.data.button.right)
+      {
+        Serial.println("Speed 600 dan degree 90");
+        int degreeVal[4] = {90, 90, 90, 90};
+        int speedVal[4] = {500, 500, 500, 500};
+        addValue(degreeVal, speedVal);
+      }
+      else if (ly <= -30 && (lx >= 31 && lx <= 127))
+      {
+        Serial.println("Speed 600 dan degree 45");
+        int degreeVal[4] = {45, 45, 45, 45};
+        int speedVal[4] = {500, 500, 500, 500};
+        addValue(degreeVal, speedVal);
+      }
+      else if (ly >= 30 && (lx >= 31 && lx <= 127))
+      {
+        Serial.println("Speed 600 dan degree 135");
+        int degreeVal[4] = {135, 135, 135, 135};
+        int speedVal[4] = {500, 500, 500, 500};
+        addValue(degreeVal, speedVal);
+      }
+      else if (lx <= -30 && (ly >= -50 && ly <= 50) || Ps3.data.button.left)
+      {
+        Serial.println("Speed 600 dan degree -90");
+        int degreeVal[4] = {-90, -90, -90, -90};
+        int speedVal[4] = {500, 500, 500, 500};
+        addValue(degreeVal, speedVal);
+      }
+      else if (ly <= -50 && (lx <= -36 && lx >= -128))
+      {
+        Serial.println("Speed 600 dan degree -45");
+        int degreeVal[4] = {-45, -45, -45, -45};
+        int speedVal[4] = {500, 500, 500, 500};
+        addValue(degreeVal, speedVal);
+      }
+      else if (ly >= 35 && (lx <= -36 && lx >= -128))
+      {
+        Serial.println("Speed 600 dan degree -135");
+        int degreeVal[4] = {-135, -135, -135, -135};
+        int speedVal[4] = {500, 500, 500, 500};
+        addValue(degreeVal, speedVal);
+      }
+      if (rx <= -40){
+        Serial.println("Speed 500");
+        int degreeVal[4] = {-45, -135, 45, 135};
+        int speedVal[4] = {500, 500, 500, 500};
+        addValue(degreeVal, speedVal);
+      }
+      else if(rx >= 40){
+        Serial.println("Speed 500");
+        int degreeVal[4] = {135, 45, -135, -45};
+        int speedVal[4] = {500, 500, 500, 500};
+        addValue(degreeVal, speedVal);
+      }
+      else
+      {
+        Serial.println("Speed 0 dan degree 0");
+        for (int i = 0; i < 4; i++)
+        {
+          Drive_SP[i] = 0;
+        }
+      }
 
     if (Steer_SP[0] > 0)
     {
