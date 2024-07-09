@@ -152,68 +152,68 @@ void mainApplicationTask(void *parameter)
       {
         Serial.println("Speed 600 dan degree 0");
         int degreeVal[4] = {0, 0, 0, 0};
-        int speedVal[4] = {500, 500, 500, 500};
+        int speedVal[4] = {300, 300, 300, 300};
         addValue(degreeVal, speedVal);
       }
       else if (ly >= 30 && (lx >= -50 && lx <= 50) || Ps3.data.button.down)
       {
         Serial.println("Speed 600 dan degree 180");
         int degreeVal[4] = {180, 180, 180, 180};
-        int speedVal[4] = {500, 500, 500, 500};
+        int speedVal[4] = {300, 300, 300, 300};
         addValue(degreeVal, speedVal);
       }
       else if (lx >= 30 && (ly >= -50 && ly <= 50) || Ps3.data.button.right)
       {
         Serial.println("Speed 600 dan degree 90");
         int degreeVal[4] = {90, 90, 90, 90};
-        int speedVal[4] = {500, 500, 500, 500};
+        int speedVal[4] = {300, 300, 300, 300};
         addValue(degreeVal, speedVal);
       }
       else if (ly <= -30 && (lx >= 31 && lx <= 127))
       {
         Serial.println("Speed 600 dan degree 45");
         int degreeVal[4] = {45, 45, 45, 45};
-        int speedVal[4] = {500, 500, 500, 500};
+        int speedVal[4] = {300, 300, 300, 300};
         addValue(degreeVal, speedVal);
       }
       else if (ly >= 30 && (lx >= 31 && lx <= 127))
       {
         Serial.println("Speed 600 dan degree 135");
         int degreeVal[4] = {135, 135, 135, 135};
-        int speedVal[4] = {500, 500, 500, 500};
+        int speedVal[4] = {300, 300, 300, 300};
         addValue(degreeVal, speedVal);
       }
       else if (lx <= -30 && (ly >= -50 && ly <= 50) || Ps3.data.button.left)
       {
         Serial.println("Speed 600 dan degree -90");
         int degreeVal[4] = {-90, -90, -90, -90};
-        int speedVal[4] = {500, 500, 500, 500};
+        int speedVal[4] = {300, 300, 300, 300};
         addValue(degreeVal, speedVal);
       }
       else if (ly <= -50 && (lx <= -36 && lx >= -128))
       {
         Serial.println("Speed 600 dan degree -45");
         int degreeVal[4] = {-45, -45, -45, -45};
-        int speedVal[4] = {500, 500, 500, 500};
+        int speedVal[4] = {300, 300, 300, 300};
         addValue(degreeVal, speedVal);
       }
       else if (ly >= 35 && (lx <= -36 && lx >= -128))
       {
         Serial.println("Speed 600 dan degree -135");
         int degreeVal[4] = {-135, -135, -135, -135};
-        int speedVal[4] = {500, 500, 500, 500};
+        int speedVal[4] = {300, 300, 300, 300};
         addValue(degreeVal, speedVal);
       }
-      if (rx <= -40){
+      else if (rx <= -40){
         Serial.println("Speed 500");
         int degreeVal[4] = {-45, -135, 45, 135};
-        int speedVal[4] = {500, 500, 500, 500};
+        int speedVal[4] = {200, 200, 200, 200};
         addValue(degreeVal, speedVal);
       }
       else if(rx >= 40){
         Serial.println("Speed 500");
         int degreeVal[4] = {135, 45, -135, -45};
-        int speedVal[4] = {500, 500, 500, 500};
+        int speedVal[4] = {200, 200, 200, 200};
         addValue(degreeVal, speedVal);
       }
       else
@@ -233,8 +233,8 @@ void mainApplicationTask(void *parameter)
     {
       eepromVal = -1;
     }
-    EEPROM.write(addsDegree, eepromVal);
-    EEPROM.commit();
+    // EEPROM.write(addsDegree, eepromVal);
+    // EEPROM.commit();
     vTaskDelay(10 / portTICK_PERIOD_MS);
   }
 }
